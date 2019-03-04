@@ -1,0 +1,76 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package app;
+
+import bean.Stock;
+import download.DownloadFromGoogle;
+import java.util.LinkedList;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import util.ApplicationConstants;
+import util.ApplicationUtils;
+
+/**
+ *
+ * @author Administrator
+ */
+public class UpdateThread extends TimerTask {
+
+    @Override
+    public void run() {
+       updateStocks(); 
+    }
+
+    public void updateStocks() {
+        LinkedList symbolList = ApplicationUtils.readSymbols(ApplicationConstants.SYMBOL_LIST_PATH);
+        ExecutorService executor = Executors.newFixedThreadPool(50);
+        String symbol = "";
+        LinkedList allStockList = new LinkedList();
+        DownloadFromGoogle dfg = null;
+        try {
+            for (Object sym : symbolList) {
+                try {
+                    symbol = (String) sym;
+                    String fileName = ApplicationConstants.SYMBOL_PATH + "/" + symbol + ".csv";
+                    dfg = new DownloadFromGoogle(symbol, ApplicationConstants.INTERVAL_SEC, ApplicationConstants.PERIOD, fileName);
+                    try {
+                        executor.execute(dfg);
+                    } catch (Exception e) {
+                        throw e;
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            executor.shutdown();
+            while (!executor.isTerminated()) {
+            }
+        }
+    }
+
+    public void startMonitor(UpdateThread monitor) {
+        Timer timer = null;
+        TimerTask timerTask = null;
+
+        // final Process x = p;
+        // final Runtime y=r;
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+        timerTask = monitor;
+        timer = new Timer();
+        timer.schedule(timerTask, 0, 300000);
+    }
+    
+    public static void main(String[] args) {
+        UpdateThread t=new UpdateThread();
+        t.startMonitor(t);
+    }
+ 
+}

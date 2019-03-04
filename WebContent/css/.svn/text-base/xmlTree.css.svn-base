@@ -1,0 +1,230 @@
+body{
+	font-family:Times New Roman, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	font-weight:normal;
+}
+.trigger{
+	cursor: pointer;
+	display:block;
+	font-size:14px;
+	color:#669933;
+	background-color:#ECF3F8;
+	width:100%;
+	padding:5px 0px;
+	border-bottom:1px solid #ffffff;
+}
+
+.branch{
+	display: block;
+	margin-left: 10px;
+	font-family:Times New Roman, Arial, Helvetica, sans-serif;
+	font-size:10px;
+	font-weight:normal;
+	color:#000000;
+	background-color:#FBFBFB;
+	padding:5px 0px;
+}
+.textfield{
+font-family:Times New Roman, Verdana,sans-serif;
+text-decoration:none;
+border:1px solid #669933;
+width:150px;
+}
+/*a{
+	text-decoration: none;
+}
+a:hover{
+	text-decoration: underline;
+}*/
+
+
+.page_heading{
+font-size:19px;
+color:#055A8D;
+padding:0px 5px 5px 0px;
+display:inline-block;
+float:left;
+}
+
+.body_container{
+width:100%;
+padding:0px 0px 0px 5px;
+}
+
+.content_container_sub{
+margin:15px 0px 0px 0px;
+padding:0px;
+clear:both;
+}
+
+/*	Starts rounded corner module box*/
+.module_panel{
+margin-top:7px;
+margin-left:5px;
+margin-right:5px;
+}
+.module_tbl{
+
+}
+.module_tbl_tl{
+/*
+background-image:url(../images/tbl_tl.gif);
+background-repeat:no-repeat;
+background-position:right bottom;
+*/
+background-image:url(../images/tbl_top_hline.gif);
+background-repeat:repeat-x;
+background-position:center bottom;
+
+}
+.module_tbl_tr{
+/*
+background-image:url(../images/tbl_tr.gif);
+background-repeat:no-repeat;
+background-position:left bottom;
+*/
+
+background-image:url(../images/tbl_top_hline.gif);
+background-repeat:repeat-x;
+background-position:center bottom;
+}
+.module_tbl_bl{
+/*
+background-image:url(../images/tbl_bl.gif);
+background-repeat:no-repeat;
+background-position:right top;*/
+width:6;
+height:7; 
+
+background-image:url(../images/tbl_bottom_hline.gif);
+background-repeat:repeat-x;
+background-position:center top;
+}
+.module_tbl_br{
+/*
+background-image:url(../images/tbl_br.gif);
+background-repeat:no-repeat;
+background-position:left top; */
+width:6;
+height:7;
+
+background-image:url(../images/tbl_bottom_hline.gif);
+background-repeat:repeat-x;
+background-position:center top;
+}
+.tbl_hline_top{
+background-image:url(../images/tbl_top_hline.gif);
+background-repeat:repeat-x;
+background-position:center bottom;
+}
+.tbl_hline_bottom{
+background-image:url(../images/tbl_bottom_hline.gif);
+background-repeat:repeat-x;
+background-position:center top;
+height:7;
+}
+.tbl_vline_left{
+background-image:url(../images/tbl_left_vline.gif);
+background-repeat:repeat-y;
+background-position:right;
+width:7;
+}
+.tbl_vline_right{
+background-image:url(../images/tbl_right_vline.gif);
+background-repeat:repeat-y;
+background-position:left;
+width:7;
+}
+/*end rounded corner module box */
+
+.button_bg{
+font-family:Times New Roman, Arial, Helvetica, sans-serif;
+font-size:11px;
+font-weight:bold;
+color:#666666;
+/*background-image:url(../images/button_bg.gif);*/
+background-color:#F6FAFF;
+background-position:center;
+background-repeat:repeat-x;
+border:1px solid #8C8C8C;
+margin:3px 0px 3px 3px;
+}
+
+.buttons_holder{
+padding-right:2px;
+padding-top:0px;
+float:right;
+display:inline-block;
+}
+
+.separator{
+clear:both;
+}
+.tree_main_holder span {
+	font-weight:bold;
+	padding:3px 0px 0px 0px;
+	display:inline-block;
+}
+
+.tree_header span {
+	font-weight:bold;
+	padding:3px 0px 3px 0px;
+	display:inline-block;
+}
+
+.tree_content {
+	margin-left:20px;
+	margin-top:5px;
+}
+
+.tree_header {
+	margin-top:5px;
+}
+
+.tree_table_content {
+	display:block;
+	margin-left:20px;
+	margin-top:0px;
+}
+
+.sublink_selected_blue{
+color:#ECF3F8;
+text-decoration:none;
+font-weight:bold;
+padding:0px 10px 0px 10px;
+float:left;
+}
+.sub_heading_bg{
+background-color:#F4FBE8;
+border-top:2px solid #669933; 
+width:100%;
+margin:0px 0px 0px 0px;
+}
+
+.bg_white {
+background-color:#FFFFFF;
+}
+
+/* ------------------------Non-Printing CSS------------------------*/
+@media print {
+.button_bg {
+display:none;
+}
+.page_heading {
+color:#000000;
+}
+
+img {
+display:none;
+}
+
+.sub_heading_bg_blue{
+border-top:2px solid #000000; 
+width:100%;
+margin:2px 5px 0px 0px;
+}
+.sub_heading{
+color:#000000;
+}
+}
+

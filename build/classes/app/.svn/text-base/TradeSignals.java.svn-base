@@ -1,0 +1,54 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package app;
+
+import bean.Stock;
+import java.util.HashMap;
+import util.ApplicationConstants;
+
+/**
+ *
+ * @author Administrator
+ */
+public class TradeSignals {
+
+    public static int sig_ema_315(Stock stock) {
+        boolean up = false;
+        int signalperiod = 0;
+        HashMap indiMap = stock.getIndicators();
+        double ema3[] = (double[]) indiMap.get(ApplicationConstants.EMA_3);
+        double ema15[] = (double[]) indiMap.get(ApplicationConstants.EMA_15);
+        try{
+        if (ema3 != null && ema15 != null) {
+            if (ema15[ema15.length - 1] < ema3[ema3.length - 1]) {
+                up = true;
+            }
+            int i =ema15.length-1;
+            for ( ; i > 0; i--) {
+//                System.out.println("ema15-3 : " +ema15[i]+" "+ema3[i]);
+                if (up) {
+                    if (ema15[i] < ema3[i]) {
+                        signalperiod++;
+                    } else {
+                        break;
+                    }
+                } else {
+                    if (ema15[i] > ema3[i]) {
+                        signalperiod++;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return signalperiod;
+    }
+
+    public void sig_adx() {
+    }
+}

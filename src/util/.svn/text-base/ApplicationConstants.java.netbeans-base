@@ -1,0 +1,34 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package util;
+
+/**
+ *
+ * @author Administrator
+ */
+public class ApplicationConstants {
+    
+    static{
+//        System.setProperty("http.proxyHost", "10.0.3.111");
+//        System.setProperty("http.proxyPort", "8080");
+    }
+    	public static String IMAGE_PATH = "images/";
+	public static String JS_PATH = "js/";
+	public static String CSS_PATH = "css/";
+        public static String UIACTION_NAME="action";
+        public static String UIACTION_DISPLAY_STOCKS="displayStocks";
+        public static String SYMBOL_LIST_PATH="d://trading//RealDATA//S2.txt";
+        public static String SYMBOL_PATH="d://trading//RealDATA";
+        public static int INTERVAL_SEC=300;
+        public static int PERIOD=3;
+        public static String TRANSFER_OBJ="TransferObj";
+        public static String EMA_3="EMA-3";
+        public static String EMA_15="EMA-15";
+        public static String ADX="ADX";
+        public static String RSI="RSI";
+        public static String ATR="ATR";
+        
+        
+}

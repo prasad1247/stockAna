@@ -1,0 +1,282 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package app;
+
+import bean.StockPrice;
+import bean.TransferObj;
+import bean.Stock;
+import com.sun.xml.internal.ws.message.saaj.SAAJHeader;
+import com.tictactec.ta.lib.Core;
+import com.tictactec.ta.lib.MAType;
+import com.tictactec.ta.lib.MInteger;
+import com.tictactec.ta.lib.RetCode;
+import download.DownloadFromGoogle;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import util.ApplicationConstants;
+import util.ApplicationUtils;
+
+/**
+ *
+ * @author Administrator
+ */
+public class StockAnalysis implements Callable<Stock> {
+
+    String symbol;
+
+    public StockAnalysis() {
+    }
+
+    public StockAnalysis(String symbol) {
+        this.symbol = symbol;
+    }
+
+    @Override
+    public Stock call() throws Exception {
+        Stock stock = getDatafromFile(symbol);
+        try {
+
+            stock.setName(symbol);
+            stock = addIndicators(stock);
+            stock.setEmaSignal(TradeSignals.sig_ema_315(stock));
+        } catch (Exception e) {
+            throw e;
+        }
+        return stock;
+    }
+
+    public TransferObj displayAllStockList() {
+        TransferObj tfo = new TransferObj();
+        LinkedList symbolList = ApplicationUtils.readSymbols(ApplicationConstants.SYMBOL_LIST_PATH);
+        ExecutorService executor = Executors.newFixedThreadPool(50);
+        String symbol = "";
+        LinkedList<Future<Stock>> allStockList = new LinkedList<Future<Stock>>();
+//           System.setProperty("http.proxyHost", "10.0.3.111");
+//            System.setProperty("http.proxyPort", "8080");
+        for (Object sym : symbolList) {
+            try {
+                symbol = (String) sym;
+                System.out.println("For Symbol:" + symbol);
+                StockAnalysis sa = new StockAnalysis(symbol);
+                Future<Stock> newStock = executor.submit(sa);
+                allStockList.add(newStock);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }finally{
+             executor.shutdown();
+        }
+        }
+        tfo.setAllstockList(allStockList);
+        return tfo;
+    }
+
+    public TransferObj downloadAllStocks() {
+        TransferObj tfo = new TransferObj();
+        LinkedList symbolList = ApplicationUtils.readSymbols(ApplicationConstants.SYMBOL_LIST_PATH);
+        String symbol = "";
+        DownloadFromGoogle dfg = new DownloadFromGoogle();
+        LinkedList allStockList = new LinkedList();
+        for (Object sym : symbolList) {
+            try {
+                symbol = (String) sym;
+                System.out.println("For Symbol:" + symbol);
+                Stock sp = dfg.downloadStockDetails(symbol, ApplicationConstants.INTERVAL_SEC, ApplicationConstants.PERIOD);
+                sp.setName(symbol);
+                allStockList.add(sp);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+        tfo.setAllstockList(allStockList);
+        return tfo;
+    }
+
+    public Stock getDatafromFile(String symbol) throws IOException {
+        LinkedList stockPriceList = new LinkedList();
+        String fileName = ApplicationConstants.SYMBOL_PATH + "/" + symbol + ".csv";
+        Stock mainBean = null;
+        int serice = count(fileName);
+        Date[] date = new Date[serice];
+        double[] high = new double[serice];
+        double[] low = new double[serice];
+        double[] open = new double[serice];
+        double[] close = new double[serice];
+        double[] volume = new double[serice];
+        File dataFile = new File(fileName);
+        BufferedReader br = null;
+        if (dataFile.exists()) {
+            dataFile.setReadOnly();
+            String strLine = "";
+            mainBean = new Stock();
+            String[] dataArray = null;
+            int i = 0;
+            int interval = 1;
+            DateFormat formatter1 = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+            //   DateFormat formatter1 =new SimpleDateFormat("dd-MM-yyyy HH:mm:ss") ;
+            try {
+                br = new BufferedReader(new FileReader(dataFile));
+                while ((strLine = br.readLine()) != null) {
+                    dataArray = strLine.split(",");
+                    Date d = formatter1.parse(dataArray[0] + " " + dataArray[1]);
+                    date[i] = d;//formatter1.parse(strLine);
+                    open[i] = Double.parseDouble(dataArray[2]);
+                    high[i] = Double.parseDouble(dataArray[3]);
+                    low[i] = Double.parseDouble(dataArray[4]);
+                    close[i] = Double.parseDouble(dataArray[5]);
+                    volume[i] = Integer.parseInt(dataArray[6]);
+                    StockPrice sp = new StockPrice();
+                    sp.setDateTime(d);
+                    sp.setOpen(Double.parseDouble(dataArray[2]));
+                    sp.setHigh(Double.parseDouble(dataArray[3]));
+                    sp.setLow(Double.parseDouble(dataArray[4]));
+                    sp.setClose(Double.parseDouble(dataArray[5]));
+                    sp.setVolume(Integer.parseInt(dataArray[6]));
+                    stockPriceList.add(sp);
+                    i++;
+                }
+                mainBean.setDateTime(date);
+                mainBean.setClose(close);
+                mainBean.setHigh(high);
+                mainBean.setLow(low);
+                mainBean.setOpen(open);
+                mainBean.setVolume(volume);
+                mainBean.setStockList(stockPriceList);
+                mainBean.setName(symbol);
+
+            } catch (ParseException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } finally {
+                br.close();
+            }
+        } else {
+            DownloadFromGoogle dfg = new DownloadFromGoogle();
+            dfg.downloadAndSaveDetails(symbol, ApplicationConstants.INTERVAL_SEC, ApplicationConstants.PERIOD, fileName);
+            mainBean = getDatafromFile(symbol);
+            System.out.println("downloading");
+        }
+        return mainBean;
+    }
+
+    public int count(String filename) throws IOException {
+        File f = new File(filename);
+        boolean empty = true;
+        int count = 0;
+        if (f.exists()) {
+            InputStream is = new BufferedInputStream(new FileInputStream(f));
+            try {
+                byte[] c = new byte[1024];
+                int readChars = 0;
+                while ((readChars = is.read(c)) != -1) {
+                    empty = false;
+                    for (int i = 0; i < readChars; ++i) {
+                        if (c[i] == '\n') {
+                            ++count;
+                        }
+                    }
+                }
+            } finally {
+                is.close();
+            }
+        }
+        return (count == 0 && !empty) ? 1 : count;
+    }
+
+    private Stock addIndicators(Stock stock) {
+        HashMap indicators = new HashMap();
+        double input[] = stock.getClose();
+        double output[] = new double[input.length];
+        double output1[] = new double[input.length];
+        double output2[] = new double[input.length];
+        double output3[] = new double[input.length];
+        double output4[] = new double[input.length];
+        int outputInt[];
+        MInteger outBegIdx = new MInteger();
+        MInteger outNbElement = new MInteger();
+        RetCode retCode;
+        Core lib = new Core();
+        int lookback;
+
+        lookback = lib.emaLookback(15);
+        retCode = lib.ema(0, input.length - 1, input, lookback + 1, outBegIdx, outNbElement, output);
+        output = rightJustify(output, outBegIdx.value);
+        indicators.put(ApplicationConstants.EMA_15, output);
+
+        lookback = lib.emaLookback(3);
+        retCode = lib.ema(0, input.length - 1, input, lookback + 1, outBegIdx, outNbElement, output1);
+        output = rightJustify(output1, outBegIdx.value);
+        indicators.put(ApplicationConstants.EMA_3, output1);
+
+        retCode = lib.adx(0, input.length - 1, stock.getHigh(), stock.getLow(), stock.getClose(), 14, outBegIdx, outNbElement, output2);
+        output = rightJustify(output2, outBegIdx.value);
+        indicators.put(ApplicationConstants.ADX, output2);
+
+        retCode = lib.rsi(0, input.length - 1, stock.getClose(), 14, outBegIdx, outNbElement, output3);
+        output = rightJustify(output3, outBegIdx.value);
+        indicators.put(ApplicationConstants.RSI, output3);
+
+        lib.atr(0, input.length - 1, stock.getHigh(), stock.getLow(), stock.getClose(), 15, outBegIdx, outNbElement, output4);
+        output = rightJustify(output4, outBegIdx.value);
+        indicators.put(ApplicationConstants.ATR, output4);
+
+        lookback = lib.rsiLookback(8);
+        retCode = lib.rsi(0, input.length - 1, input, lookback + 1, outBegIdx, outNbElement, output3);
+        output = rightJustify(output3, lookback);
+        indicators.put(ApplicationConstants.RSI, output3);
+
+        stock.setIndicators(indicators);
+        return stock;
+    }
+
+    public double[] rightJustify(double[] digits, int len) {
+        System.arraycopy(digits, 0, digits, len, digits.length - len);
+        Arrays.fill(digits, 0, len, 0);
+        return digits;
+    }
+
+    public void changeTimeFrame(Stock stock,long time) {
+        double oldC[] = stock.getClose();
+        double oldO[] = stock.getOpen();
+        double oldL[] = stock.getLow();
+        double oldH[] = stock.getHigh();
+        int count=0;
+        Double c=0d;
+        Double o=0d;
+        Double l=0d;
+        Double h=0d;
+        Date dateTime[] = stock.getDateTime();
+        Date startDate=dateTime[0];
+        Date nextDate=new Date((startDate.getTime()+time));
+        for(int i=0;i<dateTime.length;i++){
+            if(dateTime[i].getTime()<nextDate.getTime()){
+                c+=oldC[i];
+                o+=oldO[i];
+                l+=oldL[i];
+                h+=oldH[i];
+                count++;
+            }else{
+                nextDate=new Date((dateTime[i].getTime()+time));
+                
+            }
+        }
+    }
+}

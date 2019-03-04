@@ -1,0 +1,1 @@
+<div class="footer">Copyright MDA. All Rights Reserved. </div>
